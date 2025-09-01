@@ -1,140 +1,128 @@
-# ESP-IDF SSD1306 OLED Driver
+# ESP32 Digital Level
 
-## 📖 About
+A high-precision digital level built using an ESP32, an MPU9250 9-axis IMU, and an I2C OLED display. This project leverages a sophisticated sensor fusion algorithm to provide a smooth and accurate visualization of orientation in real-time.
 
-This project is a lightweight, I2C-based driver for SSD1306 OLED displays, specifically designed for the Espressif IoT Development Framework (ESP-IDF). The goal is to provide a straightforward and efficient way to interface with these popular displays in your ESP32 projects.
-
-Currently, the driver is in the early stages of development. The foundational functionalities, such as initialization, configuration, and basic drawing operations, are implemented. The included `main.c` provides a simple random walk example to demonstrate the driver's current capabilities.
-
------
+The application reads data from the accelerometer, gyroscope, and magnetometer, fuses it using a Mahony filter to compute a stable orientation quaternion, and then translates this data into a visual "bubble" on an OLED screen.
 
 ## ✨ Features
 
-  * **I2C Communication:** Utilizes the ESP-IDF's I2C master driver for communication with the OLED display.
-  * **Display Initialization:** A comprehensive initialization sequence to configure the SSD1306 controller for standard 128x64 displays.
-  * **Local Framebuffer:** Implements a local framebuffer for efficient and flicker-free rendering.
-  * **Basic Drawing Primitives:** Includes a function to draw filled rectangles (`oled_square_filled`), which can be used for drawing individual pixels or lines.
-  * **Bitmap Support:** A function to display monochrome bitmaps is in development.
-
------
+  * **Real-time Orientation Sensing**: Utilizes an MPU9250 Inertial Measurement Unit to capture 9-axis motion data.
+  * **Advanced Sensor Fusion**: Implements a **Mahony filter** to combine sensor data, correcting for drift and noise to produce a stable orientation quaternion ($q = w + xi + yj + zk$).
+  * **Clear Visual Feedback**: Displays the level on a 128x64 OLED screen, representing the tilt with a circle on a central crosshair.
+  * **Robust Drivers**: Includes custom, well-documented drivers for both the MPU9250 sensor and the SSD1306 OLED display.
+  * **RTOS-Powered**: Built on FreeRTOS for efficient task management, separating sensor data processing from display rendering.
+  * **Highly Configurable**: Key parameters like I2C pins and device addresses are easily configurable through macros.
 
 ## 🛠️ Hardware Requirements
 
-  * An ESP32 development board
-  * An SSD1306-based OLED display (128x64 resolution)
-  * Jumper wires for connecting the display to the ESP32
+| Component              | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| **Microcontroller** | ESP32 Development Board                          |
+| **Inertial Sensor** | MPU9250 9-Axis (Gyro + Accel + Mag) Module       |
+| **Display** | 128x64 I2C OLED Display (SSD1306 controller)     |
+| **Wiring** | Breadboard and jumper wires                      |
+| **Power** | 3.3V power source (usually from the ESP32 board) |
 
-### Pin Configuration
+## 🔌 Wiring Diagram
 
-The driver is configured to use the following default pins, which can be easily changed in `main.c`:
+Connect the components to the ESP32 using the I2C bus. The default pins are configured in `main.c`.
 
-  * **SCL:** GPIO 22
-  * **SDA:** GPIO 21
+| ESP32 Pin   | MPU9250 Pin | OLED Display Pin |
+| ----------- | ----------- | ---------------- |
+| `GPIO 22`   | `SCL`       | `SCL`            |
+| `GPIO 21`   | `SDA`       | `SDA`            |
+| `3V3`       | `VCC`       | `VCC`            |
+| `GND`       | `GND`       | `GND`            |
 
------
+## ⚙️ Configuration
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-  * ESP-IDF v5.5 or later installed and configured.
-  * A working toolchain for building and flashing ESP32 projects.
-
-### Configuration
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/AsafDov/ESP_IDF_SSD1306_OLED_Driver/
-    ```
-2.  **Navigate to the Project Directory:**
-    ```bash
-    cd ESP_IDF_SSD1306_OLED_Driver
-    ```
-3.  **Configure the Project:**
-    Open `main.c` and adjust the I2C pins and OLED configuration macros as needed for your hardware setup.
-    ```c
-    #define SCL_PIN GPIO_NUM_22
-    #define SDA_PIN GPIO_NUM_21
-
-    #define OLED_I2C_ADDRESS 0x3c
-    #define OLED_SCREEN_WIDTH 128
-    #define OLED_SCREEN_HEIGHT 64
-    ```
-4.  **Build and Flash:**
-    ```bash
-    idf.py build
-    idf.py -p (YOUR_PORT) flash
-    ```
-5.  **Monitor the Output:**
-    ```bash
-    idf.py -p (YOUR_PORT) monitor
-    ```
-
-### Basic Usage Example
-Random Walk Simulation
-![ezgif com-optimize (1)](https://github.com/user-attachments/assets/4bd85a07-feb8-43f4-b65d-c78f8a4fa3af)
-
-Here's a simplified example of how to use the driver:
+You can easily modify the core hardware settings by changing the `#define` macros at the top of the `main.c` file.
 
 ```c
-#include "oled_driver.h"
+// main.c
 
-void app_main(void) {
-    // 1. Initialize the I2C master bus
-    i2c_master_bus_handle_t bus_handle;
-    // ... (I2C initialization code) ...
+// I2C CONFIG
+#define SCL_SPEED_HZ 400000
+#define SCL_PIN GPIO_NUM_22
+#define SDA_PIN GPIO_NUM_21
 
-    // 2. Configure the OLED display
-    oled_config_t oled_cfg = {
-        .device_address = OLED_I2C_ADDRESS,
-        .width = OLED_SCREEN_WIDTH,
-        .height = OLED_SCREEN_HEIGHT,
-        // ... (other configuration) ...
-    };
+// OLED CONFIG
+#define OLED_I2C_ADDRESS 0x3c
+#define OLED_SCREEN_WIDTH 128
+#define OLED_SCREEN_HEIGHT 64
+#define OLED_REFRESH_RATE_MS 250
 
-    // 3. Initialize the OLED driver
-    oled_handle_t oled_handle = oled_init(&bus_handle, &oled_cfg);
-
-    // 4. Draw to the framebuffer
-    oled_square_filled(oled_handle, 10, 10, 20, 20);
-
-    // 5. The oled_update_frame_buffer() is called within oled_square_filled()
-    //    to push the changes to the display.
-}
+// MPU9250 CONFIG
+#define MPU9250_SENSOR_ADDR 0x68
 ```
 
------
+## 🚀 Installation & Usage
 
-## 📋 Driver API
+This project is built using the Espressif IoT Development Framework (ESP-IDF).
 
-The public functions for interacting with the OLED driver are defined in `oled_driver.h`.
+1.  **Clone the Repository**:
 
-| Function                       | Description                                                                                                                              |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `oled_init()`                  | Initializes the OLED driver and the display hardware.                                                                                    |
-| `oled_flush_gddram()`          | Clears the entire display by writing zeros to the GDDRAM.                                                                                |
-| `oled_print_bitmap()`          | (Under Development) Renders a monochrome bitmap on the screen.                                                                           |
-| `oled_square_filled()`         | Draws a filled rectangle on the display. Can be used to set individual pixels by providing the same start and end coordinates.             |
-| `oled_get_refresh_rate()`      | Returns the configured refresh rate of the display.                                                                                      |
-| `oled_update_frame_buffer()`   | Pushes the contents of the local framebuffer to the OLED display, making any changes visible.                                             |
+    ```bash
+    git clone <repository-url>
+    cd esp32-digital-level
+    ```
 
------
+2.  **Configure the Project**:
+    Set your target ESP32 chip and serial port.
 
-## 🚧 Development Status & Future Plans
+    ```bash
+    idf.py set-target esp32
+    idf.py menuconfig
+    ```
 
-This driver is currently a **work in progress**. While the core functionality is in place, there is still much to be done.
+    (No specific project configuration is required in `menuconfig`, but you can use it to set up your serial flasher options).
 
-### Roadmap
+3.  **Build the Project**:
 
-  * [ ] **Drawing Primitives:** Implement more advanced drawing functions for lines, circles, and text.
-  * [ ] **Status Bar Icons:** Implement editing of status bar with icon support
-  * [ ] **Text Library:** Implement a text rendering library
-  * [ ] **Font Support:** Add a font library for easy text rendering.
-  * [ ] **Optimization:** Refine the I2C communication and framebuffer handling for better performance.
-  * [ ] **Documentation:** Improve the in-code documentation and provide more detailed examples.
+    ```bash
+    idf.py build
+    ```
 
------
+4.  **Flash and Monitor**:
+    Connect your ESP32 board, then flash the firmware and start the serial monitor.
 
-## 🤝 Contributing
+    ```bash
+    idf.py flash monitor
+    ```
 
-Contributions, issues, and feature requests are welcome\! Feel free to check the [issues page](https://www.google.com/search?q=https://github.com/your-username/your-repository/issues).
+Upon startup, the OLED display will flash briefly to confirm it's working, and then the digital level interface will appear.
+
+## 🔬 How It Works
+
+The system operates through two primary FreeRTOS tasks that run concurrently.
+
+1.  **MPU9250 Sensor Task (`mpu9250_task`)**:
+
+      * This task continuously polls the MPU9250 sensor for raw accelerometer, gyroscope, and magnetometer data.
+      * It applies a **Mahony fusion filter** to this raw data. The filter uses the gyroscope data as its primary source for orientation changes and corrects for its inherent drift using the accelerometer (for gravity vector) and magnetometer (for Earth's magnetic field) data.
+      * The output of the filter is a normalized **quaternion**, which represents the sensor's orientation in 3D space without the risk of gimbal lock.
+      * This quaternion is stored in the MPU9250 driver handle, ready to be requested by other tasks.
+
+2.  **Display Task (`level_task`)**:
+
+      * This is the main application logic loop.
+      * It requests the latest orientation quaternion from the MPU9250 driver.
+      * The quaternion ($q$) is converted into more intuitive **Euler angles** (pitch, roll, yaw) using the following formulas:
+        $$Roll = \arctan(2(q_w q_x + q_y q_z) / 1 - 2(q_x^2 + q_y^2))$$ </br>
+        $$Pitch = \arcsin(2(q_w q_y - q_z q_x))$$
+      * The `pitch` and `roll` values are then mapped to the `x` and `y` coordinates of the OLED display.
+      * Finally, the task clears the screen, draws a static crosshair, and draws a circle at the calculated `(x, y)` position to represent the level's "bubble". This entire framebuffer is then pushed to the OLED display.
+
+## 📂 Code Overview
+
+  * **`main.c`**: The main application entry point. It handles the initialization of the I2C bus, the MPU9250 driver, and the OLED driver. It also creates and starts the `level_task`.
+  * **`oled_driver.c/.h`**: A modular driver for the SSD1306 OLED display. It provides an API for initialization, drawing shapes (filled squares, filled circles), clearing the screen, and updating the display from a local framebuffer.
+  * **`mpu9250_driver.c/.h`**: A comprehensive driver for the MPU9250 IMU. It manages I2C communication, sensor configuration, and runs a background task to perform sensor fusion and calculate orientation.
+  * **`mpu9240_register_map.h`**: A header file containing all the I2C register addresses for the MPU9250 and its internal AK8963 magnetometer, making the driver code clean and readable.
+
+## 🚧 Future Improvements
+
+  * [ ] **Runtime Calibration**: Implement a calibration routine at startup to calculate and correct for gyroscope and magnetometer biases.
+  * [ ] **Enhanced Visualization**: Create a more graphical "bubble level" interface instead of a simple circle and crosshair.
+  * [ ] **Power Optimization**: Use the MPU9250's low-power modes and FreeRTOS tickless idle for battery-powered applications.
+  * [ ] **Refactor Display Update**: As noted in the `oled_update_frame_buffer` `TODO`, move the memory allocation to a one-time operation to improve performance and reduce heap fragmentation.
