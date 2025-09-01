@@ -62,7 +62,7 @@ void app_main(void)
 
 
     /* Start LEVEL task example */
-    xTaskCreatePinnedToCore(level_task, "level_task", 2024, &params, 5, NULL, 1);
+    xTaskCreatePinnedToCore(level_task, "level_task", 4096, &params, 5, NULL, 1);
 }
 
 
@@ -150,7 +150,10 @@ void level_task(void* params){
         if (x < r) x = r;
         if (y < r+OLED_STATUS_BAR_HEIGHT) y = r+OLED_STATUS_BAR_HEIGHT;
         if (x > OLED_SCREEN_WIDTH - 1 - r) x = OLED_SCREEN_WIDTH - 1 - r;
-        if (y > OLED_CONTENT_HEIGHT - 1 - r) y = OLED_CONTENT_HEIGHT - 1 - r;
+        if (y > OLED_SCREEN_HEIGHT - 1 - r) y = OLED_SCREEN_HEIGHT - 1 - r;
+
+        // ESP_LOGI("LEVEL", "pitch: %f, roll: %f, yaw: %f", pitch, roll, yaw);
+        // ESP_LOGI("LEVEL", "x: %d, y: %d", x, y);
         
         /* Clear screen */
         oled_clean_screen(oled_handle);
