@@ -1,0 +1,25 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "C:\\Users\\nathe\\esp\\v5.5\\esp-idf",
+  "idf.toolsPathWin": "C:\\Users\\nathe\\.espressif",
+  "idf.pythonInstallPath": "C:\\Users\\nathe\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "files.associations": {
+    "*.py": "python",
+    "freertos.h": "c",
+    "i2c_master.h": "c",
+    "test_board.h": "c",
+    "stdio.h": "c",
+    "sdkconfig.h": "c",
+    "stdlib.h": "c",
+    "random": "c",
+    "oled_driver.h": "c",
+    "cstdint": "c"
+  },
+  "idf.flashType": "UART",
+  "idf.portWin": "COM11",
+  "cSpell.words": [
+    "gddram",
+    "oled",
+    "SRCS"
+  ]
+}
