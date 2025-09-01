@@ -146,7 +146,7 @@ void level_task(void* params){
         quaternion_to_euler(q, &pitch, &roll, &yaw);
         r = 5;
         x = (int)(center_x - pitch);
-        y = (int)(center_y - (roll+95)); // 95 is the orientation offset on my mpu
+        y = (int)(center_y - (roll)); // 95 is the orientation offset on my mpu
         if (x < r) x = r;
         if (y < r+OLED_STATUS_BAR_HEIGHT) y = r+OLED_STATUS_BAR_HEIGHT;
         if (x > OLED_SCREEN_WIDTH - 1 - r) x = OLED_SCREEN_WIDTH - 1 - r;
@@ -154,7 +154,7 @@ void level_task(void* params){
 
         // ESP_LOGI("LEVEL", "pitch: %f, roll: %f, yaw: %f", pitch, roll, yaw);
         // ESP_LOGI("LEVEL", "x: %d, y: %d", x, y);
-        
+
         /* Clear screen */
         oled_clean_screen(oled_handle);
 
