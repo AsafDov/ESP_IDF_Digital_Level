@@ -4,6 +4,8 @@ A high-precision digital level built using an ESP32, an MPU9250 9-axis IMU, and 
 
 The application reads data from the accelerometer, gyroscope, and magnetometer, fuses it using a Mahony filter to compute a stable orientation quaternion, and then translates this data into a visual "bubble" on an OLED screen.
 
+![gif](https://github.com/user-attachments/assets/118fc69b-7c7a-46c3-be60-b85578c76364)
+
 ## ✨ Features
 
   * **Real-time Orientation Sensing**: Utilizes an MPU9250 Inertial Measurement Unit to capture 9-axis motion data.
